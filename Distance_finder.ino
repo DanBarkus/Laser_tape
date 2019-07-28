@@ -17,6 +17,7 @@ Adafruit_BNO055 bno = Adafruit_BNO055(55);
 static int trigger1 = 11;
 static int trigger2 = 10;
 static int laser = 13;
+static float armLength = 350;
 
 bool firstTrig = true;
 bool trigging = false;
@@ -36,7 +37,7 @@ void setup(void)
 
   Serial.begin(9600);
   alpha4.begin(0x70);  // pass in the address
-  alpha4.setBrightness(2);
+  alpha4.setBrightness(4);
   alpha4.clear();
   alpha4.writeDigitAscii(2, 'O');
   alpha4.writeDigitAscii(3, 'K');
@@ -77,8 +78,9 @@ void loop(void)
       trigging = true;
 
       if (firstTrig) {
+        calcDistance = 0;
         startAngle = event.orientation.x;
-        startDistance = distance;
+        startDistance = distance + armLength;
         if (startAngle >= 180) {
           startAngle = 360 - startAngle;
         }
@@ -91,10 +93,11 @@ void loop(void)
       deltaX = orientX - startAngle;
       calcDistance = sqrt(sq(startDistance) + sq(endDistance) - 2*startDistance*endDistance * cos(radians(deltaX)));
       updateTextDisplay(calcDistance * 0.0032808416);
+      //updateTextDisplay(calcDistance * 0.0393701);
     }
     else {
       if (trigging) {
-        endDistance = distance;
+        endDistance = distance + armLength;
         trigging = false;
       };
       firstTrig = true;
@@ -116,6 +119,7 @@ void loop(void)
   }
   else {
     updateTextDisplay(calcDistance * 0.0032808416);
+    //updateTextDisplay(calcDistance * 0.0393701);
     digitalWrite(laser, LOW);
   }
   alpha4.writeDisplay();
